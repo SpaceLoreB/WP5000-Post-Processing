@@ -1,4 +1,8 @@
-impN = C3dH(C3dH.ma == 'VR',:);   % only taking the results from 'NL' test
+% C3dH = importfile("C:\Users\LBecce\Desktop\WPpostpro\WP5000-Post-Processing\UniBz_W 000024_C3dL.csv", [2, Inf]);
+
+%%
+impN = C3dH(C3dH.ma == 'NL',:);   % only taking the results from 'NL' test
+varName = 'C3L4';
 
 startX = min(impN.px);
 startY = min(impN.py);
@@ -17,6 +21,7 @@ end
 %% absolutes
 strNabs = vecnorm(strN,2,3);    % 2-Norm of velocity vector
 strNvx = strN(:,:,1);   % Vx component
+strNalpha = atan(strN(:,:,1)./strN(:,:,3)); % angles of the airspeeds from horizontal
 %%
 v_cutoff = zeros(size(strNvx)); % initialise matrix to apply filters (cut-off, maximum speed, ...)
 i_cutoff = find(strNvx>=1.5);    % fin index of all velocities > 1.5 m/s (cut-off)
@@ -33,66 +38,53 @@ i_heigth = find(r_u<=r_max);
 r_usable = r_u(i_heigth);
 c_usable = c_u(i_heigth);
 
-% this cycle checks that there are more than 2 measurements at each height
-% with speed more than 4 m/s
-for j = 1:max(r_u)
-    cd = r_u == j;
-    if sum(cd) < 2
-        I = find(cd);
-        r_usable(I) = [];
-        c_usable(I) = [];
-        fprintf('Removed row #%i\n',I)
-    end
-end
-clear cd j I
+% NOT WORKING SO I AM SKIPPING TEH WHOLE CALCULATION
+% % this cycle checks that there are more than 2 measurements at each height
+% % with speed more than 4 m/s
+% for j = 1:max(r_u)
+%     cd = r_u == j;
+%     if sum(cd) == 1
+%         I = find(cd);
+%         r_usable(I) = [];
+%         c_usable(I) = [];
+%         fprintf('Removed row #%i\n',I)
+%     end
+% end
+% clear cd j I
 
 i_usable = sub2ind(size(strNvx),r_usable,c_usable);
 v_usable(i_usable) = v_cutoff(i_usable);  % copy elements indexed into new matrix
 
 %% Volumes
-% % PUT THIS STUFF INTO A STRUCT
 % % for each height h, q(h) = sum_i(A*v(h,i)), where A = 1e-2 m^2, area of
 % sampling point, and has to be corrected for 3.6e+3 s/h, since speed is in
 % s/h and q referred to h.
 q_h = sum(v_cutoff,2)*36;
-q_tot = sum(q_h);
-
 q_us = sum(v_usable,2)*36;
-q_us_tot = sum(q_us);
 
-q_us_tot/q_tot;
-mu = mean(q_us(q_us ~= 0));
-sgm = std(q_us(q_us ~= 0));
-CV = sgm/mu;
+% q_us_tot/q_tot;
+muStd = [mean(q_us(q_us ~= 0)) std(q_us(q_us ~= 0))];
 
-%% Plotting (1)
-figure
-v_h = max(strNvx,[],2);
+%% Angles
+a_usable = zeros(size(strNvx));
+a_usable(i_usable) = strNalpha(i_usable);
 
-area(y,q_h,'FaceAlpha',0.5,'FaceColor',[0.47 0.67 0.19]);   % total flow
-hold on
-grid minor
-area(y,q_us,'FaceColor',[0.07 0.62 1]); % usable flow
-plot([0 0; 4000 4000], [mu*1.25 0.75*mu; mu*1.25 0.75*mu],'k--')
-plot([h_w h_w].*10,[0 2000],'Color','r','LineWidth',1.5)
-bar(y,v_h*1e2,'BarWidth',0.2,'FaceColor',[0.72 0.27 1])
-%% Plotting
-figure
-b = bar3(v_cutoff);
-% b = bar3(v_usable);
-% next lines come from matlab doc, are just to color bars according to
-% value
-for k = 1:length(b)
-zdata = b(k).ZData;
-b(k).CData = zdata;
-b(k).FaceColor = 'flat';
-end
+a_h = zeros(nY,1);
+% for h = 1:nY  % weighted mean
+%     a_h(h) = a_usable(h,:)*v_usable(h,:)'/q_us(h);
+% end
+a_h = mean(a_usable,2);
+% 
+% rad2deg( a_h( find(y<=h_w*10,1,'last') ) )    % angle at working height
 
-title('Valore assoluto di velocità')
-newTicksX = (xticks-1)*1e2 + startX;
-xticklabels(newTicksX)
-xlabel('X [mm]')
-newTicksY = (yticks-1)*1e2 + startY;
-yticklabels(newTicksY)
-ylabel('Y [mm]')
-zlabel('abs(v) [m s^{-1}]')
+%% PUT THIS STUFF INTO A STRUCT
+% % DONE
+outStr = struct;
+outStr.q_h = q_h;
+outStr.q_us = q_us;
+outStr.q_tot = sum(q_h);
+outStr.q_us_tot = sum(q_us);
+outStr.y = y;
+outStr.muStd = muStd;
+outStr.cv = muStd(2)/muStd(1);
+assignin("base",varName,outStr)
