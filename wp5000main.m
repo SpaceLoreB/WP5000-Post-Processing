@@ -8,7 +8,8 @@ rawData = importWPcsv([dpath dname], [2, Inf]);
 cfgName = input('Enter configuration name: ','s');
 
 %% Working parameters
-h_w = 180;    % work height [cm]
+h_w = 350;    % work height [cm]
+% A sane individual would use one unit throughout the code. I am not that individual.
 vmin_usable = 3;   % usable air speed [m/s]
 % how to process: 'abs' = abs. val. of velocities,
 % 'x' = x-component,
@@ -29,7 +30,7 @@ outStr.results = produceResults(outStr);
 
 % Keep working through the same cfg, then save it with chosen name at
 % last (and export to storable file)
-% assignin("base",cfgName,outStr)
+assignin("base",cfgName,outStr)
 % clear outStr
 
 % % % Pretty much the end of the processing. Now produce some readable and
@@ -38,35 +39,16 @@ outStr.results = produceResults(outStr);
 %% COMPARE, PLOT, SAVE
 %% Format ISO-compl. tables
 % (usable, up to w_h --> bicolor?)
-% makeResTable(outStr,cfgName);
+makeResTable(outStr,cfgName);
 
 %%  Format summary table (as per original)
 printOverallResTable(outStr,cfgName);
 %% Plot velocities
 
 %% Plot flowrates
-% WPcompPlot
+ff = flowRatesCompPlot(outStr,cfgName);
+
 %% Plot angles (?)
-
-% % % TEMPORARY: OLD PLOT FOR COMPARISON
-% Comparative plots. input: L, R in this order
-green = [0.47 0.67 0.19];   % colours def
-blue = [0.07 0.62 1];
-
-fig = figure;
-% subplot(1,2,1)  % left side
-barh(outStr.L.z,-outStr.L.Q(:,1),'FaceColor',green,'FaceAlpha',0.7)
-hold on
-barh(outStr.L.z,-outStr.L.Q(:,2),'FaceColor',blue,'FaceAlpha',0.7)
-grid on
-xticklabels(-xticks)
-title('Left side')
-xlabel('Air flow rate [m^3 h^{-1}]')
-ylabel('Height [mm]')
-plot(-[mu*1.25 0.75*mu; mu*1.25 0.75*mu],ylim,'k--')
-
-plot(-[C3L.muStd(1)*1.25 0.75*C3L.muStd(1); C3L.muStd(1)*1.25 0.75*C3L.muStd(1)],ylim,'k--')
-plot(xlim,[h_w h_w].*10,'Color','r','LineWidth',1.5)
 
 %% DECLARATIONS/sandbox
 
@@ -132,18 +114,14 @@ resStruct.Q_outliers = Qbuffer./Q_Usable2hw_tot.*100;
 
 end
 
-% might eventually move to separate file
-% to do:
-% - plot means pm std
-% - change xlims to fit 1.1*max q_tot
-% - try out other fcn
-% - change colours
-
-function fig = flowRatesCompPlot(outStr)
+function fig = flowRatesCompPlot(outStr,cfgName)
 % Comparative plots. input: L, R in this order
 totalColour = [0.93,0.69,0.13];   % colours def
 usableColour = [0.39,0.83,0.07];
 potUsableColour = [0.85,0.33,0.10];
+
+% Pre-calculating width of figure(s)
+xmax = max([outStr.L.Q(:,1); outStr.R.Q(:,1)]);
 
 fig = figure;
 subplot(1,2,1)  % left side
@@ -151,64 +129,34 @@ subplot(1,2,1)  % left side
 barh(outStr.L.z,-outStr.L.Q(:,1),'FaceColor',totalColour,'FaceAlpha',0.7)
 hold on
 % Plot usable volume
-barh(outStr.L.z(1:k),-outStr.L.Q(1:k,2),'FaceColor',usableColour,'FaceAlpha',0.7)
-barh(outStr.L.z(k+1:end),-outStr.L.Q(k+1:end,2),'FaceColor',potUsableColour,'FaceAlpha',0.7)
+barh(outStr.L.z(1:outStr.results.WHindex),-outStr.L.Q(1:outStr.results.WHindex,2),'FaceColor',usableColour,'FaceAlpha',0.7)
+barh(outStr.L.z(outStr.results.WHindex+1:end),-outStr.L.Q(outStr.results.WHindex+1:end,2),'FaceColor',potUsableColour,'FaceAlpha',0.7)
+plot(-outStr.results.Q_Us_muStdCV(1,1).*[1.25 0.75; 1.25 0.75],ylim,'k--','HandleVisibility','off')
 grid on
-xticklabels(-xticks)
 title('Left side')
 xlabel('Air flow rate [m^3 h^{-1}]')
 ylabel('Height [mm]')
-% plot(-[outStr.muStd(1)*1.25 0.75*outStr.muStd(1); outStr.muStd(1)*1.25 0.75*outStr.muStd(1)],ylim,'k--')
+% set(gca,'XLim',1.1*[-xmax 0]);   % Restrict x field
 plot(xlim,outStr.params(1).*[1 1].*10,'Color','r','LineWidth',1.5)
+xticklabels(abs(xticks))
 
 subplot(1,2,2)  % right side
 barh(outStr.R.z,outStr.R.Q(:,1),'FaceColor',totalColour,'FaceAlpha',0.7)
 hold on
 set(gca,'YAxisLocation','right')
 % Plot usable volume
-barh(outStr.R.z(1:k),outStr.R.Q(1:k,2),'FaceColor',usableColour,'FaceAlpha',0.7)
-barh(outStr.R.z(k+1:end),outStr.R.Q(k+1:end,2),'FaceColor',potUsableColour,'FaceAlpha',0.7)
+barh(outStr.R.z(1:outStr.results.WHindex),outStr.R.Q(1:outStr.results.WHindex,2),'FaceColor',usableColour,'FaceAlpha',0.7)
+barh(outStr.R.z(outStr.results.WHindex+1:end),outStr.R.Q(outStr.results.WHindex+1:end,2),'FaceColor',potUsableColour,'FaceAlpha',0.7)
+plot(outStr.results.Q_Us_muStdCV(1,2).*[1.25 0.75; 1.25 0.75],ylim,'k--','HandleVisibility','off')
 grid on
-% plot([C3R.muStd(1)*1.25 0.75*C3R.muStd(1); C3R.muStd(1)*1.25 0.75*C3R.muStd(1)],ylim,'k--')
-plot(xlim,outStr.params(1).*[1 1].*10,'Color','r','LineWidth',1.5)
-legend('Non-usable volume','Usable volume','Potentially usable volume','Working height')
 title('Right side')
 xlabel('Air flow rate [m^3 h^{-1}]')
 ylabel('Height [mm]')
-
-% set(gcf,'Position',[680 105 790 773])
-% saveas(fig,strcat('figs/',savename),'png')
-% saveas(fig,strcat('figs/',savename),'fig')
-end
-
-% ALTERNATIVE
-function nzPlot(outStr)
-figure
-hold on
-
-% y = 1:length(L);    %defining heigth of plot
-% hPatt = evalin('base','hPatt');
-% hPt = hPatt(1:2:end); 
-barh(outStr.L.z,[-outStr.L.Q(:,1) outStr.R.Q(:,1)],'stacked','FaceColor',green,'FaceAlpha',0.5,'BarWidth',.5);
-barh(outStr.L.z,[-outStr.L.Q(:,2) outStr.R.Q(:,2)],'stacked','FaceColor',blue,'FaceAlpha',0.5,'BarWidth',.5);
-% errorbar(-L(:,1),y,L(:,2),'horizontal','LineStyle','none','Color',colour,'CapSize',9,'LineWidth',1)
-% errorbar(R(:,1),y,R(:,2),'horizontal','LineStyle','none','Color',colour,'CapSize',9)
-grid on
-
-% Improve readability
-plot([0 0],ylim,'k','LineWidth',2)    % Plotting a black centreline
-newXLim = 1.05*[-ceil(max( outStr.L.Q(:,1) )) ceil(max( outStr.R.Q(:,1) ))];
-set(gca,'XLim',newXLim);   % Restrict x field
-set(gca,'XTickLabel',abs(xticks))   % This makes the x ticks symmetrical
-
+% set(gca,'XLim',1.1*[0 xmax]);   % Restrict x field
 plot(xlim,outStr.params(1).*[1 1].*10,'Color','r','LineWidth',1.5)
-legend('Non-usable Volume','Usable Volume','Working Height')
-xlabel('Air flow rate [m^3 h^{-1}]')
-ylabel('Height [mm]')
+legend('Non-usable volume','Usable volume','Potentially usable volume','Working height')
 
-set(gcf,'Position',[770 42 766 738]);
-
-% legend([aa,bb(1)],'Media ugelli (lato) +/- 10%','Media dei lati +/- 5%','Location','north','FontSize',14);
-% + Add title, subtitle with symmetry
-title('Distribuzione portate volumetriche');
+set(gcf,'Position',[962    42   958   954])
+saveas(fig,['figs/' cfgName '_Q'],'png')
+saveas(fig,['figs/' cfgName '_Q'],'fig')
 end
