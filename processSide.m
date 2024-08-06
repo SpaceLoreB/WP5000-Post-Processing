@@ -3,18 +3,18 @@ function [sideResults] = processSide(rawData,side)
 impN = rawData(rawData.side == side,:);   % only taking the results from one side. No idea why I called it "impN" in the first place.
 % For L-R configs: which field is larger? adapt to that one
 startX = min(impN.px);
-startY = min(impN.py);
+startZ = min(impN.py);  % The system calls it y, but globally would be a z (vertical). Correcting this for clarity
 nX = (max(impN.px) - startX)/1e2 + 1; % number of x steps
-nY = (max(impN.py) - startY)/1e2 + 1; % number of y steps
-velComponents = zeros(nY,nX,3);  % 3D array containing the field of velocity components
+nZ = (max(impN.py) - startZ)/1e2 + 1; % number of z steps
+velComponents = zeros(nZ,nX,3);  % 3D array containing the field of velocity components
 
-y = (startY/100 : 2+nY).*100;  % heights vector
-sideResults.y = y;   % Save it
+z = (startZ/100 : 2+nZ).*100;  % heights vector
+sideResults.z = z;   % Save it
 
 for j = 1:height(impN)
     idX = (impN.px(j) - startX)/1e2 + 1;
-    idY = (impN.py(j) - startY)/1e2 + 1;
-    velComponents(idY,idX,1:3) = table2array(impN(j,4:6));
+    idZ = (impN.py(j) - startZ)/1e2 + 1;
+    velComponents(idZ,idX,1:3) = table2array(impN(j,4:6));
 end
 
 %% Prepare the dataset
@@ -43,6 +43,9 @@ i_usable = find( v_cutoff >= evalin('caller','vmin_usable') );
 
 % this cycle checks that there are more than 2 measurements at each height
 % with speed more than usable
+% % NOTE: THE INDEX IS (PREDICTABLY) ITERATIVELY CHANGING: You may see a
+% streak of rows "#1" removed. Would be nice to fix that but not
+% foundmental
 for j = 1:max(r_u)
     cd = r_u == j;
     if sum(cd) == 1
@@ -70,8 +73,8 @@ q_us = sum(v_usable,2)*36;  % usable
 a_usable = zeros(size(rawVelocities));
 a_usable(i_usable) = xzAnglesField(i_usable);
 
-a_h = zeros(nY,1);
-for h = 1:nY  % weighted mean
+a_h = zeros(nZ,1);
+for h = 1:nZ  % weighted mean
     if q_us(h) == 0
         a_h(h) = 0;
     else
@@ -82,8 +85,7 @@ end
 %% GENERATE OUTPUT STRUCT
 % % t.d. order these, give them significant names
 sideResults.Q = [q_tot q_us];
-% sideResults.q_tot = sum(q_h);
-% sideResults.q_us_tot = sum(q_us);
+sideResults.QLegenda = ['total, usable'];   % Just carrying this over to remember who is who
 sideResults.alpha = a_h;
 % % maximum recorded speed f(h)
 sideResults.vMax = max(v_cutoff,[],2);  % no need to carry over the usable: they're just the ones > vMin

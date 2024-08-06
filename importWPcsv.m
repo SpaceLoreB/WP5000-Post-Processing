@@ -1,4 +1,4 @@
-function C3dH = importWPcsv(filename, dataLines)
+function rawFile = importWPcsv(filename, dataLines)
 %IMPORTFILE Import data from a text file
 %  C3DH = IMPORTFILE(FILENAME) reads data from text file FILENAME for
 %  the default selection.  Returns the data as a table.
@@ -46,7 +46,7 @@ opts = setvaropts(opts, ["px", "py", "vx", "vy", "vz"], "DecimalSeparator", ",")
 opts = setvaropts(opts, ["px", "py", "vx", "vy", "vz"], "ThousandsSeparator", ".");
 
 % Import the data
-C3dH = readtable(filename, opts);
+rawFile = readtable(filename, opts);
 % % t.d.: Filter out NaNs!!
-C3dH.side = categorical(C3dH.side,{'VL' 'NL' 'NR' 'VR'},{'L' 'L' 'R' 'R'});
+rawFile.side = categorical(rawFile.side,{'VL' 'NL' 'NR' 'VR'},{'L' 'L' 'R' 'R'});
 end

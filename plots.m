@@ -15,10 +15,46 @@ plot([0 0; 4000 4000], [mu*1.25 0.75*mu; mu*1.25 0.75*mu],'k--')
 plot([h_w h_w].*10,[0 2000],'Color','r','LineWidth',1.5)
 bar(y,v_h_max*1e2,'BarWidth',0.2,'FaceColor',[0.72 0.27 1])
 %% Plotting
-% b = rawBar3(strNvx);
+% b = rawBar3(rawVelocities);
 % b = rawBar3(v_cutoff);
 % b = rawBar3(strNabs);
-[ff, b] = rawBar3(v_usable);
+% [ff, b] = rawBar3(v_usable);
+rawBarCompare(rawVelocitiesR,rawVelocitiesL)
+
+function rawBarCompare(array1,array2)
+figure
+subplot(1,2,1)
+    b1 = bar3(array1);
+    title(sprintf('%s',inputname(1)))
+    newTicksX = (xticks-1)*1e2 + evalin('base','startX');
+    xticklabels(newTicksX)
+    xlabel('Y [mm]')
+    newTicksY = (yticks-1)*1e2 + evalin('base','startZ');
+    yticklabels(newTicksY)
+    ylabel('Z [mm]')
+    zlabel('v_x [m s^{-1}]')
+subplot(1,2,2)
+    b2 = bar3(array2);
+    title(sprintf('%s',inputname(2)))
+    newTicksX = (xticks-1)*1e2 + evalin('base','startX');
+    xticklabels(newTicksX)
+    xlabel('Y [mm]')
+    newTicksY = (yticks-1)*1e2 + evalin('base','startZ');
+    yticklabels(newTicksY)
+    ylabel('Z [mm]')
+    zlabel('v_x [m s^{-1}]')
+for k = 1:length(b1)
+zdata = b1(k).ZData;
+b1(k).CData = zdata;
+b1(k).FaceColor = 'flat';
+end
+for k = 1:length(b2)
+zdata = b2(k).ZData;
+b2(k).CData = zdata;
+b2(k).FaceColor = 'flat';
+end
+
+end
 
 function [ff, b] = rawBar3(inArray)
 % % This function plots the raw or mid-process air velocities
@@ -38,7 +74,7 @@ title(sprintf('%s',inputname(1)))
 newTicksX = (xticks-1)*1e2 + evalin('base','startX');
 xticklabels(newTicksX)
 xlabel('Y [mm]')
-newTicksY = (yticks-1)*1e2 + evalin('base','startY');
+newTicksY = (yticks-1)*1e2 + evalin('base','startZ');
 yticklabels(newTicksY)
 ylabel('Z [mm]')
 zlabel('v_x [m s^{-1}]')

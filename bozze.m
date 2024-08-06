@@ -115,6 +115,7 @@ outStr.Q = [q_h q_us];
 outStr.q_tot = sum(q_h);
 outStr.q_us_tot = sum(q_us);
 outStr.alpha = a_h;
-% outStr.muStd = muStd;
-% outStr.cv = muStd(2)/muStd(1);
 % assignin("base",varName,outStr)
+
+
+%% MERDA ATTUALE 06.08
