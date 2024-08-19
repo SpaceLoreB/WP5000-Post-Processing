@@ -19,9 +19,9 @@ end
 
 % If you specified a name, use it, otherwise make it
 if nargin == 2
-    fname = [cfgName '_resTable.txt'];
+    fname = ['results/' cfgName '_resTable.txt'];
 elseif nargin == 1
-    fname = [inputname(1) '_resTable.txt'];
+    fname = ['results/' inputname(1) '_resTable.txt'];
 else
     disp('Bro WTF');
     return
