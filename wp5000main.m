@@ -1,14 +1,14 @@
 %% INPUT
 % Import file(s)
 % UI for selection
-[dname dpath] = uigetfile({'*.csv','CSV Files (.csv)'},'Select file');
+[dname, dpath] = uigetfile({'*.csv','CSV Files (.csv)'},'Select file');
 rawData = importWPcsv([dpath dname], [2, Inf]);
 % Create structure
 % % variable name
-cfgName = input('Enter configuration name: ','s');
+originalCfgName = input('Enter configuration name: ','s');  % I've learnt the hard way that I shouldn't overwrite variables.
 
 %% Working parameters
-h_w = 350;    % work height [cm]
+h_w = 300;    % work height [cm]
 % A sane individual would use one unit throughout the code. I am not that individual.
 vmin_usable = 3;   % usable air speed [m/s]
 % how to process: 'abs' = abs. val. of velocities,
@@ -21,11 +21,13 @@ procMethod = 'x';
 outStr = struct('params',[h_w vmin_usable],'method',procMethod);    % no real need to carry over h_w right now, only doing it for safety
 % % to-do: pick both y: if equal, assign them to general structure,
 % otherwise make comprehensive z-vector, adapt results of both (...) sides
+cfgName = sprintf('%s_%s_%i_%i',originalCfgName,outStr.method,outStr.params);
+disp(['new configuration name: ' cfgName])
 %% PROCESS, STORE
 outStr.L = processSide(rawData,'L');
 outStr.R = processSide(rawData,'R');
 
-%% Calculating results table
+% Calculating results table
 outStr.results = produceResults(outStr);
 
 % Keep working through the same cfg, then save it with chosen name at
@@ -37,15 +39,15 @@ assignin("base",cfgName,outStr)
 % (hopefully) usable output
 
 %% COMPARE, PLOT, SAVE
-%% Format ISO-compl. tables
+% %% Format ISO-compl. tables
 % (usable, up to w_h --> bicolor?)
-makeResTable(outStr,cfgName);
+% makeResTable(outStr,cfgName);
 
-%%  Format summary table (as per original)
+% %%  Format summary table (derived from original)
 printOverallResTable(outStr,cfgName);
-%% Plot velocities
+% %% Plot velocities
 
-%% Plot flowrates
+% %% Plot flowrates
 ff = flowRatesCompPlot(outStr,cfgName);
 
 %% Plot angles (?)
@@ -112,6 +114,7 @@ Qbuffer(side) = sum( Q_Usable2wh(Idx,side) );
 end
 resStruct.Q_outliers = Qbuffer./Q_Usable2hw_tot.*100;
 
+disp('Processing done');
 end
 
 function fig = flowRatesCompPlot(outStr,cfgName)
@@ -122,9 +125,11 @@ potUsableColour = [0.85,0.33,0.10];
 
 % Pre-calculating width of figure(s)
 xmax = max([outStr.L.Q(:,1); outStr.R.Q(:,1)]);
+% Index for highest volume recorded
+hmax = max( find( outStr.L.Q(:,1) == 0,1,'first'), find( outStr.R.Q(:,1) == 0,1,'first') );
 
 fig = figure;
-subplot(1,2,1)  % left side
+ax1 = subplot(1,2,1);  % left side
 % Plot total volume
 barh(outStr.L.z,-outStr.L.Q(:,1),'FaceColor',totalColour,'FaceAlpha',0.7)
 hold on
@@ -132,7 +137,7 @@ hold on
 barh(outStr.L.z(1:outStr.results.WHindex),-outStr.L.Q(1:outStr.results.WHindex,2),'FaceColor',usableColour,'FaceAlpha',0.7)
 barh(outStr.L.z(outStr.results.WHindex+1:end),-outStr.L.Q(outStr.results.WHindex+1:end,2),'FaceColor',potUsableColour,'FaceAlpha',0.7)
 plot(-outStr.results.Q_Us_muStdCV(1,1).*[1.25 0.75; 1.25 0.75],ylim,'k--','HandleVisibility','off')
-grid on
+grid minor
 title('Left side')
 xlabel('Air flow rate [m^3 h^{-1}]')
 ylabel('Height [mm]')
@@ -140,7 +145,7 @@ ylabel('Height [mm]')
 plot(xlim,outStr.params(1).*[1 1].*10,'Color','r','LineWidth',1.5)
 xticklabels(abs(xticks))
 
-subplot(1,2,2)  % right side
+ax2 = subplot(1,2,2);  % right side
 barh(outStr.R.z,outStr.R.Q(:,1),'FaceColor',totalColour,'FaceAlpha',0.7)
 hold on
 set(gca,'YAxisLocation','right')
@@ -148,12 +153,17 @@ set(gca,'YAxisLocation','right')
 barh(outStr.R.z(1:outStr.results.WHindex),outStr.R.Q(1:outStr.results.WHindex,2),'FaceColor',usableColour,'FaceAlpha',0.7)
 barh(outStr.R.z(outStr.results.WHindex+1:end),outStr.R.Q(outStr.results.WHindex+1:end,2),'FaceColor',potUsableColour,'FaceAlpha',0.7)
 plot(outStr.results.Q_Us_muStdCV(1,2).*[1.25 0.75; 1.25 0.75],ylim,'k--','HandleVisibility','off')
-grid on
+grid minor
 title('Right side')
 xlabel('Air flow rate [m^3 h^{-1}]')
 ylabel('Height [mm]')
-% set(gca,'XLim',1.1*[0 xmax]);   % Restrict x field
+
+set(gca,'XLim',1.1*[0 xmax]);   % Restrict x field
 plot(xlim,outStr.params(1).*[1 1].*10,'Color','r','LineWidth',1.5)
+
+linkaxes([ax1, ax2], 'y');
+set(gca,"YLim",[180 outStr.L.z(hmax+3)]);
+
 legend('Non-usable volume','Usable volume','Potentially usable volume','Working height')
 
 set(gcf,'Position',[962    42   958   954])
