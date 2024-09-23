@@ -1,14 +1,34 @@
 %% INPUT
 % Import file(s)
 % UI for selection
-[dname, dpath] = uigetfile({'*.csv','CSV Files (.csv)'},'Select file');
-rawData = importWPcsv([dpath dname], [2, Inf]);
+nSides = input('Enter number of sprayer sides: ');
+
+% poco dio
+    if nSides == 2
+        sideNames = ["L", "R"]';
+    else
+        sideNames = strings(nSides,1);
+        for i = 1:nSides
+          sideNames(i) = ['S' num2str(i)];
+        end
+    end
+disp(sideNames);
+
+% prepare input structure
+inStr = struct('nSides',nSides,'sideNames',sideNames);
+
+%%
+for j = 1:nSides
+    [dname, dpath] = uigetfile({'*.csv','CSV Files (.csv)'},'Select file');
+    inStr.(sideNames(j)) = importWPcsv([dpath dname], [2, Inf]);
+end
+
 % Create structure
 % % variable name
 originalCfgName = input('Enter configuration name: ','s');  % I've learnt the hard way that I shouldn't overwrite variables.
 
 %% Working parameters
-h_w = 300;    % work height [cm]
+h_w = 250;    % work height [cm]
 % A sane individual would use one unit throughout the code. I am not that individual.
 vmin_usable = 3;   % usable air speed [m/s]
 % how to process: 'abs' = abs. val. of velocities,
@@ -24,10 +44,17 @@ outStr = struct('params',[h_w vmin_usable],'method',procMethod);    % no real ne
 cfgName = sprintf('%s_%s_%i_%i',originalCfgName,outStr.method,outStr.params);
 disp(['new configuration name: ' cfgName])
 %% PROCESS, STORE
-outStr.L = processSide(rawData,'L');
-outStr.R = processSide(rawData,'R');
+% % TBD: look for "side", then choose L/R if nSides = 2, otherwise use other names
+if nSides == 2
+    outStr.L = processSide(rawData,'L');
+    outStr.R = processSide(rawData,'R');
+else
+    for j = 1:nSides
+        outStr.(sideNames(j)) = processSide(inStr.(sideNames(j)));
+    end
+end
 
-% Calculating results table
+%% Calculating results table
 outStr.results = produceResults(outStr);
 
 % Keep working through the same cfg, then save it with chosen name at

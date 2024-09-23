@@ -1,6 +1,11 @@
 function [sideResults] = processSide(rawData,side)
-% t.d: check that side is a char/categorical
-impN = rawData(rawData.side == side,:);   % only taking the results from one side. No idea why I called it "impN" in the first place.
+if nargin > 1
+    % t.d: check that side is a char/categorical
+    impN = rawData(rawData.side == side,:);   % only taking the results from one side. No idea why I called it "impN" in the first place.
+else
+    impN = rawData;
+    side = 'Pippo';
+end
 % For L-R configs: which field is larger? adapt to that one
 startX = min(impN.px);
 startZ = min(impN.py);  % The system calls it y, but globally would be a z (vertical). Correcting this for clarity
