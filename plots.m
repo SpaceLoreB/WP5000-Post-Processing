@@ -3,24 +3,15 @@
 % f1 = WPcompPlot(C2L,C2R,h_w,'C2');
 f3 = WPcompPlot(S4C3,S4C3,h_w,'C3H');
 
-%% Plotting (1)
-figure
-v_h_max = max(strNvx,[],2);
-
-area(y,q_h,'FaceAlpha',0.5,'FaceColor',[0.47 0.67 0.19]);   % total flow
-hold on
-grid minor
-area(y,q_us,'FaceColor',[0.07 0.62 1]); % usable flow
-plot([0 0; 4000 4000], [mu*1.25 0.75*mu; mu*1.25 0.75*mu],'k--')
-plot([h_w h_w].*10,[0 2000],'Color','r','LineWidth',1.5)
-bar(y,v_h_max*1e2,'BarWidth',0.2,'FaceColor',[0.72 0.27 1])
 %% Plotting
 % b = rawBar3(rawVelocities);
 % b = rawBar3(v_cutoff);
 % b = rawBar3(strNabs);
 % [ff, b] = rawBar3(v_usable);
-rawBarCompare(rawVelocitiesR,rawVelocitiesL)
-
+% rawBarCompare(rawVelocitiesR,rawVelocitiesL)
+% [ff, b] = rawBar3(Rafal_C1_raw.S4.velComponents(:,:,1));
+% [ff, b] = rawBar3(inStr.velComponents(:,:,1))
+rawBar3(v_valid(:,:,1))
 function rawBarCompare(array1,array2)
 figure
 subplot(1,2,1)

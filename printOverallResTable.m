@@ -48,18 +48,19 @@ fprintf(fileID,formatSpecPerc,'Portata efficace oltre il 25\% della media',outSt
 
 % Potentially usable (slightly above, top)
 fprintf(fileID,'\\midrule\n');
-fprintf(fileID,formatSpecNoThr, sprintf('Portata pot. efficace fra %.1f m e %.1f m',outStr.params(1)/100,outStr.params(1)/100+0.5), outStr.results.Q_PotUsableOverWH_tot(1),outStr.results.Q_PotUsableOverWH_perc(1), outStr.results.Q_PotUsableOverWH_tot(2),outStr.results.Q_PotUsableOverWH_perc(2));
-fprintf(fileID,formatSpecNoThr, sprintf('Portata pot. efficace oltre %.1f m',outStr.params(1)/100+0.5), outStr.results.Q_PotUsable2hihg_tot(1),outStr.results.Q_PotUsable2hihg_perc(1), outStr.results.Q_PotUsable2hihg_tot(2),outStr.results.Q_PotUsable2hihg_perc(2));
+% fprintf(fileID,formatSpecNoThr, sprintf('Portata pot. efficace fra %.1f m e %.1f m',outStr.params(1)/100,outStr.params(1)/100+0.5), outStr.results.Q_PotUsableOverWH_tot(1),outStr.results.Q_PotUsableOverWH_perc(1), outStr.results.Q_PotUsableOverWH_tot(2),outStr.results.Q_PotUsableOverWH_perc(2));
+% fprintf(fileID,formatSpecNoThr, sprintf('Portata pot. efficace oltre %.1f m',outStr.params(1)/100+0.5), outStr.results.Q_PotUsable2hihg_tot(1),outStr.results.Q_PotUsable2hihg_perc(1), outStr.results.Q_PotUsable2hihg_tot(2),outStr.results.Q_PotUsable2hihg_perc(2));
 
 % Non usable
-fprintf(fileID,'\\midrule\n');
+% fprintf(fileID,'\\midrule\n');
 
-fprintf(fileID,formatSpecNormal, sprintf('Portata inefficace ($\\le$ %.1f m/s) fino a %.1f m',outStr.params(2),outStr.params(1)/100) ,outStr.results.Q_NonUsable2hw_tot(1),outStr.results.Q_NonUsable2hw_perc(1), outStr.results.Q_NonUsable2hw_tot(2),outStr.results.Q_NonUsable2hw_perc(2), thr_Q_NU2wh );
-fprintf(fileID,formatSpecNormal, sprintf('Portata inefficace fra %.1f m e %.1f m',outStr.params(1)/100,outStr.params(1)/100+.5), outStr.results.Q_NonUsableOverWH_tot(1),outStr.results.Q_NonUsableOverWH_perc(1), outStr.results.Q_NonUsableOverWH_tot(2),outStr.results.Q_NonUsableOverWH_perc(2), thr_Q_NUOverWH);
-fprintf(fileID,formatSpecNormal, sprintf('Portata inefficace oltre %.1f m',outStr.params(1)/100+.5)', outStr.results.Q_NonUsable2hihg_tot(1),outStr.results.Q_NonUsable2hihg_perc(1), outStr.results.Q_NonUsable2hihg_tot(2),outStr.results.Q_NonUsable2hihg_perc(2), thr_Q_NU2hihg);
+% fprintf(fileID,formatSpecNormal, sprintf('Portata inefficace ($\\le$ %.1f m/s) fino a %.1f m',outStr.params(2),outStr.params(1)/100) ,outStr.results.Q_NonUsable2hw_tot(1),outStr.results.Q_NonUsable2hw_perc(1), outStr.results.Q_NonUsable2hw_tot(2),outStr.results.Q_NonUsable2hw_perc(2), thr_Q_NU2wh );
+% fprintf(fileID,formatSpecNormal, sprintf('Portata inefficace fra %.1f m e %.1f m',outStr.params(1)/100,outStr.params(1)/100+.5), outStr.results.Q_NonUsableOverWH_tot(1),outStr.results.Q_NonUsableOverWH_perc(1), outStr.results.Q_NonUsableOverWH_tot(2),outStr.results.Q_NonUsableOverWH_perc(2), thr_Q_NUOverWH);
+fprintf(fileID,formatSpecNormal, sprintf('Portata inefficace oltre %.1f m',outStr.params(1)/100)', outStr.results.Q_NonUsable2hihg_tot(1),outStr.results.Q_NonUsable2hihg_perc(1), outStr.results.Q_NonUsable2hihg_tot(2),outStr.results.Q_NonUsable2hihg_perc(2), thr_Q_NU2hihg);
 
 fprintf(fileID,'\\bottomrule\n');
 
 % % We're done
 out = fclose(fileID);
+disp('Table printed');
 end
