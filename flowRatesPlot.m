@@ -5,11 +5,11 @@ function flowRatesPlot(inStr,sideName,sideCoef)
     % Cedrata Tassoni
     results = evalin('caller',[inputname(1) '.results']);
     % % PLOTTING
-    barh(strToPlot.z,sideCoef*strToPlot.Q(:,1),'FaceColor',evalin('caller','totalColour'),'FaceAlpha',0.7)
+    barh(strToPlot.z,sideCoef*strToPlot.Q(:,1),'FaceColor',evalin('caller','totalColour'),'FaceAlpha',0.7,'BarWidth',1)
     hold on
     % % Plot usable volume
-    barh(strToPlot.z(1:results.WHindex),sideCoef*strToPlot.Q(1:results.WHindex,2),'FaceColor',evalin('caller','usableColour'),'FaceAlpha',0.7)
-    barh(strToPlot.z(results.WHindex+1:end),sideCoef*strToPlot.Q(results.WHindex+1:end,2),'FaceColor',evalin('caller','potUsableColour'),'FaceAlpha',0.7)
+    barh(strToPlot.z(1:results.WHindex),sideCoef*strToPlot.Q(1:results.WHindex,2),'FaceColor',evalin('caller','usableColour'),'FaceAlpha',0.7,'BarWidth',1)
+    barh(strToPlot.z(results.WHindex+1:end),sideCoef*strToPlot.Q(results.WHindex+1:end,2),'FaceColor',evalin('caller','potUsableColour'),'FaceAlpha',0.7,'BarWidth',1)
     plot(sideCoef*results.Q_Us_muStd_overall(1).*[1.25 0.75; 1.25 0.75],ylim,'k--','HandleVisibility','off')
     grid minor
     title(sideName)

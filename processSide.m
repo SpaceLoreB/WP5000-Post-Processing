@@ -24,13 +24,14 @@ function [sideResults] = processSide(velComponents)
 
 %% Prepare the dataset
 % Pre-filtering velComponents
-[v_valid, v_absolute] = validate_Velocities(velComponents, 1);
+[v_valid, v_absolute] = validate_Velocities(velComponents, 1.5);
 
 switch evalin('caller','procMethod')
     case {'abs'}
        rawVelocities = v_absolute;    % 2-Norm of velocity vector
     case {'x'}
-        rawVelocities = v_valid(:,:,1);   % Vx component
+        % rawVelocities = v_valid(:,:,1);   % Vx component
+        rawVelocities = velComponents(:,:,1);   % Vx component
     case {'xz'}
         rawVelocities = sqrt( v_valid(:,:,1).^2 + v_valid(:,:,3).^2 );   % Vxz component
     otherwise
@@ -38,39 +39,42 @@ switch evalin('caller','procMethod')
         return
 end
 
-xzAnglesField = atan(v_valid(:,:,3)./v_valid(:,:,1)); % angles of the airspeeds from horizontal
-%% This part is probably heavily optimisable
-% v_cutoff = zeros(size(rawVelocities)); % initialise matrix to apply filters (cut-off, maximum speed, ...)
-% i_cutoff = find(rawVelocities>=1.5);    % fin index of all velocities > 1.5 m/s (cut-off)
-% v_cutoff(i_cutoff) = rawVelocities(i_cutoff);  % copy elements indexed into new matrix
+xzTemp = atan(v_valid(:,:,3)./v_valid(:,:,1)); % angles of the airspeeds from horizontal
+xzAnglesField = zeros(size(xzTemp));
+xzAnglesField(~isnan(xzTemp)) = xzTemp( ~isnan(xzTemp) );
 
-v_cutoff = zeros(size(rawVelocities));
-i_cutoff = find(rawVelocities>=1);
-v_cutoff(i_cutoff) = rawVelocities(i_cutoff);
+%% This part is probably heavily optimisable
+v_cutoff = zeros(size(rawVelocities)); % initialise matrix to apply filters (cut-off, maximum speed, ...)
+i_cutoff = find(rawVelocities>=1.5);    % fin index of all velocities > 1.5 m/s (cut-off)
+v_cutoff(i_cutoff) = rawVelocities(i_cutoff);  % copy elements indexed into new matrix
+
+% v_cutoff = zeros(size(rawVelocities));
+% i_cutoff = find(rawVelocities>=1);
+% v_cutoff(i_cutoff) = rawVelocities(i_cutoff);
 rawVelocities = v_cutoff;
 
 v_usable = zeros(size(rawVelocities)); % as above, specifically for v_usable
 i_usable = find( rawVelocities >= evalin('caller','vmin_usable') );
-% [r_u, c_u] = ind2sub(size(rawVelocities),i_usable);
-% 
-% % this cycle checks that there are more than 2 measurements at each height
-% % with speed more than usable
-% % % NOTE: THE INDEX IS (PREDICTABLY) ITERATIVELY CHANGING: You may see a
-% % streak of rows "#1" removed. Would be nice to fix that but not
-% % foundmental
-% for j = 1:max(r_u)
-%     cd = r_u == j;
-%     if sum(cd) == 1
-%         I = find(cd);
-%         % r_usable(I) = [];
-%         % c_usable(I) = [];
-%         r_u(I) = [];
-%         c_u(I) = [];
-%         fprintf('Removed row #%i from %s\n',I,inputname(1))
-%     end
-% end
-% 
-% i_usable = sub2ind(size(rawVelocities),r_u,c_u);
+[r_u, c_u] = ind2sub(size(rawVelocities),i_usable);
+
+% this cycle checks that there are more than 2 measurements at each height
+% with speed more than usable
+% % NOTE: THE INDEX IS (PREDICTABLY) ITERATIVELY CHANGING: You may see a
+% streak of rows "#1" removed. Would be nice to fix that but not
+% foundmental
+for j = 1:max(r_u)
+    cd = r_u == j;
+    if sum(cd) == 1
+        I = find(cd);
+        % r_usable(I) = [];
+        % c_usable(I) = [];
+        r_u(I) = [];
+        c_u(I) = [];
+        fprintf('Removed row #%i from %s\n',I,inputname(1))
+    end
+end
+
+i_usable = sub2ind(size(rawVelocities),r_u,c_u);
 v_usable(i_usable) = rawVelocities(i_usable);  % copy elements indexed into new matrix
 
 %% Volumes

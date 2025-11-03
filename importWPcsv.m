@@ -3,7 +3,7 @@ function rawFile = importWPcsv(filename, dataLines)
 %  C3DH = IMPORTFILE(FILENAME) reads data from text file FILENAME for
 %  the default selection.  Returns the data as a table.
 %
-%  C3DH = IMPORTFILE(FILE, DATALINES) reads data for the specified row
+%  C3DH = IMPORTFILE(FILE, DAT  ALINES) reads data for the specified row
 %  interval(s) of text file FILENAME. Specify DATALINES as a positive
 %  scalar integer or a N-by-2 array of positive scalar integers for
 %  dis-contiguous row intervals.
