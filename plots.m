@@ -9,8 +9,10 @@ f3 = WPcompPlot(S4C3,S4C3,h_w,'C3H');
 % b = rawBar3(v_cutoff);
 % b = rawBar3(strNabs);
 % [ff, b] = rawBar3(v_usable);
-rawBarCompare(rawVelocitiesR,rawVelocitiesL)
-
+% rawBarCompare(rawVelocitiesR,rawVelocitiesL)
+% [ff, b] = rawBar3(Rafal_C1_raw.S4.velComponents(:,:,1));
+% [ff, b] = rawBar3(inStr.velComponents(:,:,1))
+rawBar3(vProc(vProc >= 1.5))
 function rawBarCompare(array1,array2)
 figure
 subplot(1,2,1)
